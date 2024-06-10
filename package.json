@@ -1,0 +1,18 @@
+{
+  "name": "pro-backend",
+  "version": "1.0.0",
+  "description": "backend pro project",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": [
+    "backend"
+  ],
+  "author": "Muhammad Anas",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.3"
+  }
+}
