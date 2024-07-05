@@ -114,7 +114,7 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User not found");
   }
 
-  const isPasswordValid = user.isPasswordCorrect(password);
+  const isPasswordValid = await user.isPasswordCorrect(password);
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid password");
   }
@@ -152,7 +152,8 @@ const loginUser = asyncHandler(async (req, res) => {
 const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
-    { $set: { refreshToken: undefined } },
+    // { $set: { refreshToken: null } },
+    { $unset: { refreshToken: 1 } },
     { new: true }
   );
   const options = {
@@ -214,7 +215,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 const changeCurrentPassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   const user = await User.findById(req.user?._id);
-  if (!user.isPasswordCorrect(oldPassword)) {
+  const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+  if (!isPasswordCorrect) {
     throw new ApiError(401, "Old password is incorrect");
   }
 
@@ -233,16 +235,16 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
-  const { fullName, email } = req.user;
+  const { fullName, email } = req.body;
   if (!fullName || !email) {
     throw new ApiError(400, "All fields are required");
   }
-  const user = User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
-        fullName,
-        email,
+        fullName: fullName,
+        email: email,
       },
     },
     { new: true }
@@ -265,7 +267,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   }
 
   const user = await User.findByIdAndUpdate(
-    user.user?._id,
+    req.user?._id,
     { $set: { avatar: avatar.url } },
     { new: true }
   ).select("-password");
@@ -286,7 +288,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
   }
 
   const user = await User.findByIdAndUpdate(
-    user.user?._id,
+    req.user?._id,
     { $set: { coverImage: coverImage.url } },
     { new: true }
   ).select("-password");
