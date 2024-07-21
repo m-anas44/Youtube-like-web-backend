@@ -83,6 +83,8 @@ const getAllVideos = asyncHandler(async (req, res) => {
         page: result.page,
         limit: result.limit,
         totalDocs: result.totalDocs,
+        hasNextPage: result.hasNextPage,
+        hasPrevPage: result.hasPrevPage,
       },
       "Videos Fetched Successfully"
     )
