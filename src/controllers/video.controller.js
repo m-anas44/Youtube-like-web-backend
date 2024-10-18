@@ -29,6 +29,8 @@ const getAllVideos = asyncHandler(async (req, res) => {
   const sort = {};
   if (sortType && sortBy) {
     sort[sortBy] = sortType === "desc" ? -1 : 1;
+  } else {
+    sort.createdAt = -1;
   }
 
   const pipeline = [
@@ -78,7 +80,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
   res.status(200).json(
     new ApiResponse(
       200,
-      { 
+      {
         videos: result.docs,
         page: result.page,
         limit: result.limit,
