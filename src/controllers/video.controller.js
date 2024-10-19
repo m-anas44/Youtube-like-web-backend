@@ -4,6 +4,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Video } from "../models/video.models.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import mongoose, { isValidObjectId } from "mongoose";
+import { User } from "../models/user.models.js";
 
 function formatDuration(seconds) {
   const m = Math.floor((seconds % 3600) / 60);
@@ -230,6 +231,17 @@ const getVideoById = asyncHandler(async (req, res) => {
   if (!video.length) {
     throw new ApiError(404, "Video not found");
   }
+
+// Add video to user's video history
+const user = await User.findById(req.user._id);
+
+// Check if video is already in the video history to prevent duplicates
+const alreadyWatched = user.videoHistory.some((vid) => vid.toString() === videoID);
+
+if (!alreadyWatched) {
+  user.videoHistory.push(videoID);
+  await user.save();
+}
 
   res.status(200).json(new ApiResponse(200, video[0], "Video found"));
 });

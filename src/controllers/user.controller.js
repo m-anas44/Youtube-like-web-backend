@@ -371,15 +371,15 @@ const getWatchHistory = asyncHandler(async (req, res) => {
   const user = await User.aggregate([
     {
       $match: {
-        _id: mongoose.Types.ObjectId(req.user._id),
+        _id: new mongoose.Types.ObjectId(req.user._id),
       },
     },
     {
       $lookup: {
         from: "videos",
-        localField: "watchHistory",
+        localField: "videoHistory", // Use "videoHistory" instead of "watchHistory"
         foreignField: "_id",
-        as: "watchHistory",
+        as: "videoHistory",
         pipeline: [
           {
             $lookup: {
@@ -400,7 +400,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
           },
           {
             $addFields: {
-              $first: "owner",
+              owner: { $first: "$owner" },
             },
           },
         ],
@@ -408,16 +408,21 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     },
   ]);
 
+  if (!user || !user.length) {
+    return res.status(404).json(new ApiResponse(404, [], "No history found"));
+  }
+
   return res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        user[0].watchHistory,
+        user[0].videoHistory, // Return the video history array
         "User Watch History fetched successfully"
       )
     );
 });
+
 
 export {
   registerUser,
