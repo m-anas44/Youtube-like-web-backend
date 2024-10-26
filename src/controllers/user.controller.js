@@ -216,7 +216,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   const user = await User.findById(req.user?._id);
   const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
-  
+
   if (!isPasswordCorrect) {
     return res.status(401).json({ message: "Old password is incorrect" });
   }
@@ -228,7 +228,6 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, {}, "Password changed successfully"));
 });
-
 
 const getCurrentUser = asyncHandler(async (req, res) => {
   return res
@@ -412,17 +411,14 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     return res.status(404).json(new ApiResponse(404, [], "No history found"));
   }
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        user[0].videoHistory, // Return the video history array
-        "User Watch History fetched successfully"
-      )
-    );
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      user[0].videoHistory, // Return the video history array
+      "User Watch History fetched successfully"
+    )
+  );
 });
-
 
 export {
   registerUser,

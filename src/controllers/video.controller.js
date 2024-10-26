@@ -187,6 +187,14 @@ const getVideoById = asyncHandler(async (req, res) => {
       },
     },
     {
+      $lookup: {
+        from: "likes",
+        localField: "_id",
+        foreignField: "video",
+        as: "videoLikes",
+      },
+    },
+    {
       $addFields: {
         ownerSubscribersCount: {
           $size: "$ownerSubscribers",
@@ -203,6 +211,7 @@ const getVideoById = asyncHandler(async (req, res) => {
             else: false,
           },
         },
+        likesCount: { $size: "$videoLikes" },
       },
     },
     {
@@ -213,6 +222,7 @@ const getVideoById = asyncHandler(async (req, res) => {
         videoFile: 1,
         thumbnail: 1,
         views: 1,
+        likesCount: 1,
         duration: 1,
         owner: {
           username: "$ownerDetails.username",
@@ -232,16 +242,18 @@ const getVideoById = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Video not found");
   }
 
-// Add video to user's video history
-const user = await User.findById(req.user._id);
+  // Add video to user's video history
+  const user = await User.findById(req.user._id);
 
-// Check if video is already in the video history to prevent duplicates
-const alreadyWatched = user.videoHistory.some((vid) => vid.toString() === videoID);
+  // Check if video is already in the video history to prevent duplicates
+  const alreadyWatched = user.videoHistory.some(
+    (vid) => vid.toString() === videoID
+  );
 
-if (!alreadyWatched) {
-  user.videoHistory.push(videoID);
-  await user.save();
-}
+  if (!alreadyWatched) {
+    user.videoHistory.push(videoID);
+    await user.save();
+  }
 
   res.status(200).json(new ApiResponse(200, video[0], "Video found"));
 });
