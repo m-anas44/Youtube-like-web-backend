@@ -25,7 +25,6 @@ router
   .route("/updateVideoData/:videoID")
   .patch(upload.single("thumbnail"), updateVideo);
 router.route("/deleteVideo/:videoID").delete(deleteVideo);
-router.route("/toggle/publish/:videoID").patch(togglePublishStatus);
 router.route("/getAllVideos").get(getAllVideos)
 
 export default router;

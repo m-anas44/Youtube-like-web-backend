@@ -5,6 +5,8 @@ import { Video } from "../models/video.models.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import mongoose, { isValidObjectId } from "mongoose";
 import { User } from "../models/user.models.js";
+import { Subscription } from "../models/subscription.models.js";
+import { Like } from "../models/like.models.js";
 
 function formatDuration(seconds) {
   const m = Math.floor((seconds % 3600) / 60);
@@ -196,16 +198,11 @@ const getVideoById = asyncHandler(async (req, res) => {
     },
     {
       $addFields: {
-        ownerSubscribersCount: {
-          $size: "$ownerSubscribers",
-        },
+        ownerSubscribersCount: { $size: "$ownerSubscribers" },
         isSubscribed: {
           $cond: {
             if: {
-              $in: [
-                new mongoose.Types.ObjectId(videoID),
-                "$ownerSubscribers.subscriber",
-              ],
+              $in: [req.user._id, "$ownerSubscribers.subscriber"],
             },
             then: true,
             else: false,
@@ -225,6 +222,7 @@ const getVideoById = asyncHandler(async (req, res) => {
         likesCount: 1,
         duration: 1,
         owner: {
+          _id: "$ownerDetails._id",
           username: "$ownerDetails.username",
           fullName: "$ownerDetails.fullName",
           avatar: "$ownerDetails.avatar",
@@ -242,10 +240,24 @@ const getVideoById = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Video not found");
   }
 
+  // Check if the user is subscribed to the video's owner
+  const isSubscribed = await Subscription.exists({
+    channel: video[0].owner._id,
+    subscriber: req.user._id,
+  });
+
+  // Check if the user has liked the video
+  const isLiked = await Like.exists({
+    video: videoID,
+    likedBy: req.user._id,
+  });
+
+  // Add isSubscribed and isLiked to the video data
+  video[0].isSubscribed = Boolean(isSubscribed);
+  video[0].isLiked = Boolean(isLiked);
+
   // Add video to user's video history
   const user = await User.findById(req.user._id);
-
-  // Check if video is already in the video history to prevent duplicates
   const alreadyWatched = user.videoHistory.some(
     (vid) => vid.toString() === videoID
   );
@@ -310,26 +322,6 @@ const deleteVideo = asyncHandler(async (req, res) => {
   res
     .status(200)
     .json(new ApiResponse(200, null, "Video Deleted Successfully"));
-});
-
-const togglePublishStatus = asyncHandler(async (req, res) => {
-  const { videoID } = req.params;
-  if (!isValidObjectId(videoID)) {
-    throw new ApiError(400, "Invalid video ID");
-  }
-
-  const video = await Video.findById(videoID);
-
-  if (!video) {
-    throw new ApiError(404, "Video not found");
-  }
-
-  video.isPublished = !video.isPublished;
-  await video.save();
-
-  res
-    .status(200)
-    .json(new ApiResponse(200, video, "Video status toggled successfully"));
 });
 
 export {
