@@ -15,7 +15,7 @@ function formatDuration(seconds) {
 }
 
 const getAllVideos = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10, query, sortType, sortBy, userID } = req.query;
+  const { page = 1, limit = 12, query, sortType, sortBy, userID } = req.query;
 
   let match = {};
   if (query) {
@@ -330,5 +330,4 @@ export {
   getVideoById,
   updateVideo,
   deleteVideo,
-  togglePublishStatus,
 };

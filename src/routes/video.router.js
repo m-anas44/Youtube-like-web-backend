@@ -6,7 +6,6 @@ import {
   getAllVideos,
   getVideoById,
   publishVideo,
-  togglePublishStatus,
   updateVideo,
 } from "../controllers/video.controller.js";
 
