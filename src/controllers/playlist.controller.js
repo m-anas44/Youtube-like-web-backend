@@ -191,9 +191,6 @@ const getPlaylistById = asyncHandler(async (req, res) => {
       },
     },
     {
-        $unwind: "$videoDetails"
-    },
-    {
       $project: {
         _id: 1,
         name: 1,
@@ -206,16 +203,20 @@ const getPlaylistById = asyncHandler(async (req, res) => {
           avatar: "$playlistOwner.avatar",
         },
         videos: {
-          _id: "$videoDetails._id",
-          title: "$videoDetails.title",
-          description: "$videoDetails.description",
-          thumbnail: "$videoDetails.thumbnail",
-          views: "$videoDetails.views",
-          duration: "$videoDetails.duration",
+          $map: {
+            input: "$videoDetails",
+            as: "video",
+            in: {
+              _id: "$$video._id",
+              title: "$$video.title",
+              description: "$$video.description",
+              thumbnail: "$$video.thumbnail",
+              views: "$$video.views",
+              duration: "$$video.duration",
+            },
+          },
         },
-        videosCount: {
-          $size: "$videos",
-        },
+        videosCount: { $size: "$videos" },
       },
     },
   ]);
@@ -224,10 +225,9 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Playlist not found");
   }
 
-  res
-    .status(200)
-    .json(new ApiResponse(200, playlist[0], "Playlist fetched by id"));
+  res.status(200).json(new ApiResponse(200, playlist[0], "Playlist fetched by id"));
 });
+
 
 export {
   createPlaylist,
