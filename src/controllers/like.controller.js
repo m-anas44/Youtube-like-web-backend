@@ -34,65 +34,65 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
   }
 });
 
-const toggleCommentLike = asyncHandler(async (req, res) => {
-  const { commentId } = req.params;
-  if (!isValidObjectId(commentId)) {
-    throw new ApiError(400, "Invalid Id");
-  }
+// const toggleCommentLike = asyncHandler(async (req, res) => {
+//   const { commentId } = req.params;
+//   if (!isValidObjectId(commentId)) {
+//     throw new ApiError(400, "Invalid Id");
+//   }
 
-  const existedComment = await Like.findOne({
-    comment: commentId,
-    likedBy: req.user._id,
-  });
-  if (existedComment) {
-    await Like.findByIdAndDelete(existedComment._id);
-    return res
-      .status(200)
-      .json(new ApiResponse(200, null, "Comment disliked successfully"));
-  } else {
-    const comment = await Like.create({
-      comment: commentId,
-      likedBy: req.user._id,
-    });
-    if (!comment) {
-      throw new ApiError(400, "failed to like comment");
-    }
+//   const existedComment = await Like.findOne({
+//     comment: commentId,
+//     likedBy: req.user._id,
+//   });
+//   if (existedComment) {
+//     await Like.findByIdAndDelete(existedComment._id);
+//     return res
+//       .status(200)
+//       .json(new ApiResponse(200, null, "Comment disliked successfully"));
+//   } else {
+//     const comment = await Like.create({
+//       comment: commentId,
+//       likedBy: req.user._id,
+//     });
+//     if (!comment) {
+//       throw new ApiError(400, "failed to like comment");
+//     }
 
-    return res
-      .status(200)
-      .json(new ApiResponse(201, comment, "Comment liked successfully"));
-  }
-});
+//     return res
+//       .status(200)
+//       .json(new ApiResponse(201, comment, "Comment liked successfully"));
+//   }
+// });
 
-const toggleTweetLike = asyncHandler(async (req, res) => {
-  const { tweetId } = req.params;
-  if (!isValidObjectId(tweetId)) {
-    throw new ApiError(400, "Invalid Id");
-  }
+// const toggleTweetLike = asyncHandler(async (req, res) => {
+//   const { tweetId } = req.params;
+//   if (!isValidObjectId(tweetId)) {
+//     throw new ApiError(400, "Invalid Id");
+//   }
 
-  const existedTweet = await Like.findOne({
-    tweet: tweetId,
-    likedBy: req.user._id,
-  });
-  if (existedTweet) {
-    await Like.findByIdAndDelete(existedTweet._id);
-    return res
-      .status(200)
-      .json(new ApiResponse(200, null, "Tweet disliked successfully"));
-  } else {
-    const tweet = await Like.create({
-      tweet: tweetId,
-      likedBy: req.user._id,
-    });
-    if (!tweet) {
-      throw new ApiError(400, "failed to like tweet");
-    }
+//   const existedTweet = await Like.findOne({
+//     tweet: tweetId,
+//     likedBy: req.user._id,
+//   });
+//   if (existedTweet) {
+//     await Like.findByIdAndDelete(existedTweet._id);
+//     return res
+//       .status(200)
+//       .json(new ApiResponse(200, null, "Tweet disliked successfully"));
+//   } else {
+//     const tweet = await Like.create({
+//       tweet: tweetId,
+//       likedBy: req.user._id,
+//     });
+//     if (!tweet) {
+//       throw new ApiError(400, "failed to like tweet");
+//     }
 
-    return res
-      .status(200)
-      .json(new ApiResponse(201, tweet, "Tweet liked successfully"));
-  }
-});
+//     return res
+//       .status(200)
+//       .json(new ApiResponse(201, tweet, "Tweet liked successfully"));
+//   }
+// });
 
 const getLikedVideos = asyncHandler(async (req, res) => {
   const currentUser = req.user._id;
@@ -134,6 +134,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
         owner: {
           id: "$ownerDetails._id",
           fullName: "$ownerDetails.fullName",
+          avatar: "$ownerDetails.avatar",
         },
         thumbnail: "$likedVideosDetails.thumbnail",
         views: "$likedVideosDetails.views",
@@ -147,4 +148,4 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, likedVideos, "Liked videos"));
 });
 
-export { toggleVideoLike, toggleCommentLike, toggleTweetLike, getLikedVideos };
+export { toggleVideoLike, getLikedVideos };
