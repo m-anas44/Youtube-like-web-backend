@@ -93,14 +93,6 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-  // req.body -> data
-  // username or email
-  // find the user
-  // password check
-  // generate refresh token & access token
-  // send cookie
-  // return res
-
   const { username, email, password } = req.body;
   if (!username && !email) {
     throw new ApiError(400, "username or email is required");
@@ -127,15 +119,17 @@ const loginUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
-  const options = {
+  const cookieOptions = {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production", // Secure cookies only in production
+    sameSite: "none", // Required for cross-origin cookies
   };
+  
 
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
     .json(
       new ApiResponse(
         200,
@@ -148,6 +142,7 @@ const loginUser = asyncHandler(async (req, res) => {
       )
     );
 });
+
 
 const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
